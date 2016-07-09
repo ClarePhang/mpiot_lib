@@ -50,11 +50,14 @@ TEXT_FLOW_LEFT_TO_RIGHT = 0
 TEXT_FLOW_RIGHT_TO_LEFT = 1
 
 class LCD1602Drv:
-    def __init__(self, addr=0x27, channel=0, cols=16, rows=1):
+    def __init__(self, i2c, addr=0x27, cols=16, rows=1, backlight=True):
         self.i2c_addr = addr
         self._displayfunction = (LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS)
-        self._backlightVal = LCD_NOBACKLIGHT
-        self.i2c = I2C(channel, mode=I2C.MASTER)
+        if backlight is True:
+            self._backlightVal = LCD_BACKLIGHT
+        else:
+            self._backlightVal = LCD_NOBACKLIGHT
+        self.i2c = i2c
         if rows > 1:
             self._displayfunction |= LCD_2LINE
         self._numlines = rows
@@ -176,13 +179,11 @@ class LCD1602Drv:
         self.sendCommand(LCD_DISPLAYCONTROL | self._displayControl)
         time.sleep_us(37)
 
-    def setScrollDisplayPosition(self, mode=DISPLAY_DIR_LEFT):
-        if mode == DISPLAY_DIR_LEFT:
-            self.sendCommand(LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVELEFT)
-        elif mode == DISPLAY_DIR_RIGHT:
-            self.sendCommand(LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVERIGHT)
-        else:
-            raise ValueError("Invalid display position")
+    def leftShift(self):
+        self.sendCommand(LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVELEFT)
+
+    def rightShift(self):
+        self.sendCommand(LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVERIGHT)
 
     def setTextFlowDir(self, mode=TEXT_FLOW_LEFT_TO_RIGHT):
         if mode == TEXT_FLOW_LEFT_TO_RIGHT:
