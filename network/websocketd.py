@@ -39,6 +39,8 @@ Sec-WebSocket-Accept: %s\r
 """ % webkey
     client_fd.send(resp)
     client_fd.setsockopt(socket.SOL_SOCKET, 20, None)
+    os.dupterm(ws)
+    _client_fd.setsockopt(socket.SOL_SOCKET, 20 , os.dupterm_notify)
 
 def _accept_conn(server_fd):
     global _client_fd
